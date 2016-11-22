@@ -20,12 +20,12 @@ public class OrParser<A> implements Parser<A> {
      * If every alternative fails, error message is built as  <code>msg1 " or " msg2 " or " ....</code>
      */
     @Override
-    public ParseResult<A> parse(Input in) {
+    public ParseResult<A> parse(Input in, ParseContext ctx) {
         StringBuffer sb = new StringBuffer();
         boolean first = true;
         for(int i=0; i< alts.length; i++) {
             Optional<ParseResult<A>> res =
-                alts[i].parse(in).match(
+                ctx.getResult(alts[i], in).match(
                         (fail) -> {
                             if (!first)
                                 sb.append(" or ");
@@ -40,17 +40,8 @@ public class OrParser<A> implements Parser<A> {
     }
 
     @Override
-    public boolean oneOutput() {
-        return alts.length > 1;
-    }
-
-    public OrParser<A> or(OrParser<A> that) {
-        @SuppressWarnings("unchecked")
-        Parser<A>[] arr = new Parser[alts.length + that.alts.length];
-        System.arraycopy(alts, 0, arr, 0, alts.length);
-        System.arraycopy(this.alts, 0, arr, alts.length, this.alts.length);
-        return
-                new OrParser<A>(arr);
+    public boolean isTerminal() {
+        return alts.length <= 1;
     }
 
     /**
@@ -65,6 +56,15 @@ public class OrParser<A> implements Parser<A> {
                 new OrParser<A>((Parser<A>[]) newAlts);
     }
 
+    public OrParser<A> or(OrParser<A> that) {
+        @SuppressWarnings("unchecked")
+        Parser<A>[] arr = new Parser[alts.length + that.alts.length];
+        System.arraycopy(alts, 0, arr, 0, alts.length);
+        System.arraycopy(this.alts, 0, arr, alts.length, this.alts.length);
+        return
+                new OrParser<A>(arr);
+    }
+
     /**
      * Creates new OrParser that has list of alternatives extended (not nested OrParser).
      *
@@ -72,7 +72,7 @@ public class OrParser<A> implements Parser<A> {
      */
     @Override
     public OrParser<A> or(Supplier<Parser<A>> that) {
-        return or((in) -> that.get().parse(in));
+        return or((in, ctx) -> ctx.getResult(that.get(), in));
     }
 
     @SafeVarargs

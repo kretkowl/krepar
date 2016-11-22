@@ -21,7 +21,6 @@ public class Input {
      * @return new Input
      */
     public Input forward(int chars) {
-        System.out.println("forward on " + System.identityHashCode(this) + " by " + chars);
         return new Input(charSequence, offset + chars);
     }
 }

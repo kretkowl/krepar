@@ -1,7 +1,5 @@
 package pl.krepar;
 
-import lombok.val;
-
 /**
  * Base interface for every parser. Has no fluent api methods (except for map).
  *
@@ -12,22 +10,16 @@ import lombok.val;
  *
  * @param <A> return value
  */
-public interface BasicParser<A> {
+public interface BasicParser<A, T extends BasicParser<A, T>> {
 
     public default ParseResult<? extends A> parse(Input in) {
-        return parse(in, new ParseContext());
-    }
-
-    public default ParseResult<? extends A> parseM(Input in, ParseContext ctx) {
-        val r = ctx.getResult(this, in);
-        return r.orElseGet(() -> {
-            val res = parse(in, ctx);
-            ctx.putResult(this, in, res);
-            return res;
-        });
+        return new ParseContext().getResult(this, in);
     }
 
     public ParseResult<? extends A> parse(Input in, ParseContext ctx);
 
-    public default boolean oneOutput() { return true; }
+    public default boolean isTerminal() { return true; }
+
+    @SuppressWarnings("unchecked")
+    public default T setRef(Ref<T> r) { r.set((T)this); return (T)this;}
 }

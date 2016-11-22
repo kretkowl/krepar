@@ -4,6 +4,7 @@ import static pl.krepar.ParseResult.success;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
@@ -45,6 +46,10 @@ public class Parsers {
     @SafeVarargs
     public static <B> OrParser<B> choice(Parser<B>... parsers) {
         return new OrParser<B>(parsers);
+    }
+
+    public static <B> DelayParser<B> delay(Supplier<? extends BasicParser<B, ?>> d) {
+        return new DelayParser<>(d);
     }
 
     /**

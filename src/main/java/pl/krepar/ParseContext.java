@@ -6,27 +6,23 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
 
+import lombok.Value;
+import lombok.val;
+
 public class ParseContext {
 
-    private Map<Pair<BasicParser<?>, Input>, ParseResult<?>>  memory = new HashMap<>();
-
-    @SuppressWarnings("rawtypes")
-    private Deque<BasicParser<?>[]> toVisit = new LinkedList<>();
-
-    public <A> void putResult(BasicParser<A> p, Input in, ParseResult<? extends A> res) {
-        memory.put(Pair.of(p, in), res);
-    }
+    private Map<Pair<BasicParser<?, ?>, Input>, ParseResult<?>>  memory = new HashMap<>();
 
     @SuppressWarnings("unchecked")
-    public <A> Optional<ParseResult<? extends A>> getResult(BasicParser<A> p, Input in) {
-        return Optional.ofNullable((ParseResult<? extends A>)memory.get(Pair.of(p, in)));
+    public <A> ParseResult<? extends A> getResult(BasicParser<A, ?> p, Input in) {
+        Pair<BasicParser<?, ?>, Input> key = Pair.of(p, in);
+        if (memory.containsKey(key))
+            return ((ParseResult<? extends A>)memory.get(key));
+
+        memory.put(key, ParseResult.failure("", -1)); // to allow left recurrence
+        ParseResult<? extends A> v = p.parse(in, this);
+        memory.put(key, v);
+        return v;
     }
 
-    public <A> void pushAll(BasicParser<A> ...alts) {
-        toVisit.push(alts);
-    }
-
-    public <A> BasicParser<A>[] pop() {
-        return (BasicParser<A>[]) toVisit.pop();
-    }
-}
+ }

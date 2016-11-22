@@ -1,21 +1,23 @@
 package pl.krepar;
 
-import static pl.krepar.ParseResult.success;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import lombok.val;
 
 /**
- * Main interface for each stnadard parser. Defines fluent api.
+ * Main interface for each standard parser. Defines fluent api.
  *
  * @author kretkowl
  *
  * @param <A> Value type returned from parser
  */
-public interface Parser<A> extends BasicParser<A> {
+@FunctionalInterface
+public interface Parser<A> extends BasicParser<A, Parser<A>> {
 
     /**
      * Parses given string. String is wrapped in {@link Segment} object, to avoid duplication during parsing.
@@ -53,7 +55,7 @@ public interface Parser<A> extends BasicParser<A> {
      * @return complex parser
      */
     public default Parser<A> then(HideParser that) {
-        return then((BasicParser<?>)that).map((p) -> p.getFirst());
+        return then((BasicParser<?, ?>)that).map((p) -> p.getFirst());
     }
 
     /**
@@ -62,7 +64,7 @@ public interface Parser<A> extends BasicParser<A> {
      * @param that parser to join
      * @return complex parser
      */
-    public default <B> Parser<Pair<A, B>> then(BasicParser<B> that) {
+    public default <B> Parser<Pair<A, B>> then(BasicParser<B, ?> that) {
         return new ConcatParser<>(this, that);
     }
 
@@ -96,30 +98,14 @@ public interface Parser<A> extends BasicParser<A> {
      * @return parser that returns list of values from this parser
      */
     public default Parser<List<A>> repeat() {
-        return
-                new Parser<List<A>>() {
+        Ref<Parser<Stream<A>>> selfRef = new Ref<>();
 
-                    @Override
-                    public ParseResult<? extends List<A>> parse(Input in) {
-                        Input[] r = new Input[] { in };
-                        List<A> result = new ArrayList<A>();
-                        do {
+        val self =
+                this.then(selfRef).map((p) -> Stream.concat(Stream.of(p.getFirst()), p.getSecond()))
+                .or(Parsers.empty(Stream.<A>empty()))
+                .setRef(selfRef);
 
-                        } while (Parser.this.parse(r[0]).match(
-                                    (f) -> Boolean.FALSE,
-                                    (val, rest) -> {
-                                        result.add(val);
-                                        r[0] = rest;
-                                        return Boolean.TRUE;
-                                    }).booleanValue());
-                        return success(result, r[0]);
-                    }
-
-                    @Override
-                    public boolean oneOutput() {
-                        return false;
-                    }
-                };
+        return self.map((s) -> s.collect(Collectors.toList()));
     }
 
     /**

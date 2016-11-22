@@ -2,6 +2,8 @@ package pl.krepar;
 
 import static pl.krepar.ParseResult.success;
 
+import java.util.function.Supplier;
+
 import lombok.Value;
 
 /**
@@ -15,7 +17,7 @@ import lombok.Value;
  *
  */
 @Value
-public class HideParser implements BasicParser<Void> {
+public class HideParser implements BasicParser<Void, HideParser> {
 
     public final Parser<?> hidden;
 
@@ -32,9 +34,15 @@ public class HideParser implements BasicParser<Void> {
      */
     @Override
     public ParseResult<Void> parse(Input in, ParseContext ctx) {
-        return hidden.parseM(in, ctx).match(
+        return ctx.getResult(hidden, in).match(
                 ParseResult::failure,
                 (__, rest) -> success(null, rest));
+    }
+
+
+    @Override
+    public boolean isTerminal() {
+        return hidden.isTerminal();
     }
 
     /**
@@ -59,4 +67,14 @@ public class HideParser implements BasicParser<Void> {
                 new ConcatParser<>(this, that).map((p) -> p.getSecond());
     }
 
+    /**
+     * Creates complex parser as concatenation with given one.
+     * Return type is taken from the other parser.
+     * @param p
+     * @return
+     */
+    public <A> Parser<A> then(Supplier<Parser<A>> that) {
+        return
+                then(new DelayParser<>(that));
+    }
 }

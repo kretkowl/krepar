@@ -5,6 +5,9 @@ import org.junit.Test;
 import lombok.val;
 
 import static pl.krepar.Parsers.*;
+
+import java.util.stream.Stream;
+
 import static org.junit.Assert.*;
 
 public class ParserTest {
@@ -18,7 +21,7 @@ public class ParserTest {
 
         assertTrue(regexp("a+").parse("aaab").isSuccessful());
         assertTrue(regexp("a+").parse("aaab").match(
-                (__) -> Boolean.FALSE,
+                (fail) -> Boolean.FALSE,
                 (__, r) -> Boolean.valueOf(r.getCharSequence().charAt(r.getOffset()) == 'b')));
     }
 
@@ -29,8 +32,17 @@ public class ParserTest {
     }
 
     @Test
+    public void testThenWithRest() {
+        assertTrue(string("A").then(string("B")).parse("ABC").isSuccessful());
+        assertTrue(string("A").then(string("B")).parse("ABC").match(
+                (fail) -> Boolean.FALSE,
+                (__, rest) -> Boolean.valueOf(rest.getCharSequence().charAt(rest.getOffset()) == 'C')
+                ));
+    }
+
+    @Test
     public void testOr() {
-        assertTrue(string("A").or(string("B")).parse("A").isSuccessful());
+        assertTrue(string("A").or(string("B")).parse("AC").isSuccessful());
         assertTrue(string("A").or(string("B")).parse("B").isSuccessful());
         assertFalse(string("A").or(string("B")).parse("C").isSuccessful());
     }
@@ -42,12 +54,38 @@ public class ParserTest {
     }
 
     @Test
+    public void testRecursive() {
+        val refAs = new Ref<Parser<String>>();
+
+        val as = string("a").or(delay(refAs).then(string("a").hide())).setRef(refAs);
+
+        assertTrue(as.parse("a").isSuccessful());
+        assertTrue(as.parse("aa").isSuccessful());
+    }
+
+    @Test
+    public void testRecursiveWithEmpty() {
+        val refAs = new Ref<Parser<String>>();
+
+        val as = empty("a").or(delay(refAs).then(string("a").hide())).setRef(refAs);
+
+        assertTrue(as.parse("").isSuccessful());
+        assertTrue(as.parse("a").isSuccessful());
+        assertTrue(as.parse("aa").isSuccessful());
+        assertTrue(as.parse("aab").isSuccessful());
+    }
+
+    @Test
     public void testRepeat() {
         assertTrue(string("A").repeat().parse("AAB").match(
                 (__) -> Boolean.FALSE,
-                (__, r) -> Boolean.valueOf(r.getCharSequence().charAt(r.getOffset()) == 'B')));
+                (a, r) -> {
+                    System.out.println(a);
+                    System.out.println(r);
+                    return Boolean.valueOf(r.getCharSequence().charAt(r.getOffset()) == 'B');
+                }
+                ));
         assertTrue(string("A").repeat().parse("B").isSuccessful());
-
     }
 
     @Test
