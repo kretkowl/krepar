@@ -6,8 +6,6 @@ import lombok.val;
 
 import static pl.krepar.Parsers.*;
 
-import java.util.stream.Stream;
-
 import static org.junit.Assert.*;
 
 public class ParserTest {

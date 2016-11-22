@@ -9,6 +9,14 @@ import java.util.Optional;
 import lombok.Value;
 import lombok.val;
 
+/**
+ * For now, this class is a class responsible for memoization of parser results.
+ *
+ * Later it will allow for trampolining (to parse in constant stack) and all values if ambiguous grammars.
+ *
+ * @author kretkowl
+ *
+ */
 public class ParseContext {
 
     private Map<Pair<BasicParser<?, ?>, Input>, ParseResult<?>>  memory = new HashMap<>();

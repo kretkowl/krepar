@@ -2,6 +2,14 @@ package pl.krepar;
 
 import java.util.function.Function;
 
+/**
+ * Transforms parser B to parser A by mapping values returned by the first using given fuunction.
+ *
+ * @author kretkowl
+ *
+ * @param <A>
+ * @param <B>
+ */
 public class MapParser<A, B> implements Parser<A> {
 
     private final BasicParser<B, ?> base;

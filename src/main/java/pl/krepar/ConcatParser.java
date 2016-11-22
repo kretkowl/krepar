@@ -2,6 +2,15 @@ package pl.krepar;
 
 import static pl.krepar.ParseResult.success;
 
+/**
+ * Parser that matches input which can be matched by two parser in such way that first matches prefix
+ * of the string and second the rest.
+ *
+ * @author kretkowl
+ *
+ * @param <A>
+ * @param <B>
+ */
 public class ConcatParser<A, B> implements Parser<Pair<A, B>> {
 
     private final BasicParser<A, ?> first;

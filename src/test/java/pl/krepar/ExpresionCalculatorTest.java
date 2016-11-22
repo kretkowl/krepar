@@ -5,6 +5,15 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+/**
+ * Obligatory arithmetic expression example.
+ *
+ * Shows how to use references to create recursion, how to hide no value elements to simplify matching
+ * and how to use all basic parsers (with exception to optional).
+ *
+ * @author kretkowl
+ *
+ */
 public class ExpresionCalculatorTest {
 
     private final Ref<Parser<Double>> exprRef = new Ref<>();

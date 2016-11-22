@@ -2,6 +2,13 @@ package pl.krepar;
 
 import java.util.function.Supplier;
 
+/**
+ * Delay - to allow recursion in grammar.
+ *
+ * @author kretkowl
+ *
+ * @param <A>
+ */
 class DelayParser<A> implements Parser<A> {
 
     private final Supplier<? extends BasicParser<A, ?>> delay;

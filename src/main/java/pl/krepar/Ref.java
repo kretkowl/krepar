@@ -2,6 +2,14 @@ package pl.krepar;
 
 import java.util.function.Supplier;
 
+/**
+ * Reference, that can be set once and which dereference before set is illegal.
+ * To be used with recursive grammars.
+ *
+ * @author kretkowl
+ *
+ * @param <A>
+ */
 public class Ref<A> implements Supplier<A> {
 
     private A value;
