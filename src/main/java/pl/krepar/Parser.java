@@ -55,7 +55,7 @@ public interface Parser<A> extends BasicParser<A, Parser<A>> {
      * @return complex parser
      */
     public default Parser<A> then(HideParser that) {
-        return then((BasicParser<?, ?>)that).map((p) -> p.getFirst());
+        return then((BasicParser<?, ?>)that).map(Pair::getFirst);
     }
 
     /**

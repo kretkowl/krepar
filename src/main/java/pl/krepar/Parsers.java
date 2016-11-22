@@ -105,37 +105,30 @@ public class Parsers {
         return p -> f.apply(p.first, p.second);
     }
 
-    /** Match three values, like the result of string("A").then(string("B")).then(string("C")) */
     public static <A, B, C, R> Function<Pair<Pair<A, B>, C>, R> match(Function3<A, B, C, R> f) {
         return p -> f.apply(p.first.first, p.first.second, p.second);
     }
 
-    /** Match four values, like the result of string("A").then(string("B")).then(string("C")).then(string("D")) */
     public static <A, B, C, D, R> Function<Pair<Pair<Pair<A, B>, C>, D>, R> match(Function4<A, B, C, D, R> f) {
         return p -> f.apply(p.first.first.first, p.first.first.second, p.first.second, p.second);
     }
 
-    /** Match five values, like the result of string("A").then(string("B")).then(string("C")).then(string("D")).then(string("E")) */
     public static <A, B, C, D, E, R> Function<Pair<Pair<Pair<Pair<A, B>, C>, D>, E>, R> match(Function5<A, B, C, D, E, R> f) {
         return p -> f.apply(p.first.first.first.first, p.first.first.first.second, p.first.first.second, p.first.second, p.second);
     }
 
-    /** Match six values, like the result of string("A").then(string("B")).then(string("C"))...then(string("F")) */
     public static <A, B, C, D, E, F, R> Function<Pair<Pair<Pair<Pair<Pair<A, B>, C>, D>, E>, F>, R> match(Function6<A, B, C, D, E, F, R> f) {
         return p -> f.apply(p.first.first.first.first.first, p.first.first.first.first.second, p.first.first.first.second, p.first.first.second, p.first.second, p.second);
     }
 
-    /** Match seven values, like the result of string("A").then(string("B")).then(string("C"))...then(string("G")) */
     public static <A, B, C, D, E, F, G, R> Function<Pair<Pair<Pair<Pair<Pair<Pair<A, B>, C>, D>, E>, F>, G>, R> match(Function7<A, B, C, D, E, F, G, R> f) {
         return p -> f.apply(p.first.first.first.first.first.first, p.first.first.first.first.first.second, p.first.first.first.first.second, p.first.first.first.second, p.first.first.second, p.first.second, p.second);
     }
 
-    /** Match eight values, like the result of string("A").then(string("B")).then(string("C"))...then(string("H")) */
     public static <A, B, C, D, E, F, G, H, R> Function<Pair<Pair<Pair<Pair<Pair<Pair<Pair<A, B>, C>, D>, E>, F>, G>, H>, R> match(Function8<A, B, C, D, E, F, G, H, R> f) {
         return p -> f.apply(p.first.first.first.first.first.first.first, p.first.first.first.first.first.first.second, p.first.first.first.first.first.second, p.first.first.first.first.second, p.first.first.first.second, p.first.first.second, p.first.second, p.second);
     }
 
-    /** Match nine values, like the result of string("A").then(string("B")).then(string("C"))...then(string("I")) */
     public static <A, B, C, D, E, F, G, H, I, R> Function<Pair<Pair<Pair<Pair<Pair<Pair<Pair<Pair<A, B>, C>, D>, E>, F>, G>, H>, I>, R> match(Function9<A, B, C, D, E, F, G, H, I, R> f) {
         return p -> f.apply(p.first.first.first.first.first.first.first.first, p.first.first.first.first.first.first.first.second, p.first.first.first.first.first.first.second, p.first.first.first.first.first.second, p.first.first.first.first.second, p.first.first.first.second, p.first.first.second, p.first.second, p.second);
     }

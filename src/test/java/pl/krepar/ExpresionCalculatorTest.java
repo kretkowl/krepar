@@ -55,4 +55,5 @@ public class ExpresionCalculatorTest {
         assertEquals(6., expr.parse("(1+3)*3/2").getValue().get().doubleValue(), .0);
         assertFalse(expr.parse("(1++3)*3/2").getValue().isPresent());
     }
+
 }
