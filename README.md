@@ -9,7 +9,10 @@ ambiguity or simply find idea of writing grammar in one language just to compile
 create parser of third language that is compiled with your application a bit ridiculous, then you may be 
 interested in *krepar*
 
-It exposes fluent Java API with few convenience methods to allow fast creating simple grammars.
+
+## Description
+
+*krepar* exposes fluent Java API with few convenience methods to allow fast creating simple grammars.
 
 You write your grammar in Java, there is no need of precompiling anything - this is as ordinary Java as the
 rest of your code is.
@@ -28,16 +31,30 @@ Example:
 
 Prints "parse successful" on console.
 
-If you want some more useful example, look into ExpressionCalculatorTest, which contains "obligatory" math expression
-parser.
+If you want some more useful example, look into ExpressionCalculatorTest, which contains "obligatory" math expression parser.
 
+
+Parsers are built as composition of simpler parsers, in functional manner. But the amount of stack used during parsing depends on grammar, not the input itself. This is achieved by trampolining each parser call.
+
+Every parsing run searches for and returns set of all possible matches of prefix strings. So in this code
+ 
+```java
+    Set<ParseResult<List<String>>> ress = parse(string("a").repeat(), "aa");
+```
+
+*ress* will contain 3 elements (empty list, list with one "a", list with two "a").
+
+Depending on your needs, you may add *.then(end())* code, which will result in only full matches.
+But of course if your grammar is ambiguous, you can get many results nevertheless (which is good!).
 
 ## Dependencies
+
 Library depends only on [lombok](projectlombok.org) in compile time. You may delombok it, to get rid off
 of this dependence.
 
 ## Future work
-Currently, each recursion in parsing gives recursive call in java code, so stack can be easily exhausted.
-This calls will be replaced with trampolines.
 
-Also, returning of all possible parses in case of ambiguous grammars will be added.
+Code needs some optimization. Even though stack is not exhausted easily, heap is consumed heavily
+during parsing. Also, currently time is also not satisfactory when it comes to long inputs.
+
+There will be added path for possibly quick return of first match (if such exists).
