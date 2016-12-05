@@ -1,5 +1,7 @@
 package pl.krepar;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -17,16 +19,7 @@ import lombok.val;
  * @param <A> Value type returned from parser
  */
 @FunctionalInterface
-public interface Parser<A> extends BasicParser<A, Parser<A>> {
-
-    /**
-     * Parses given string. String is wrapped in {@link Segment} object, to avoid duplication during parsing.
-     * @param in String to parse
-     * @return result value or failure
-     */
-    public default ParseResult<? extends A>parse(String in) {
-        return parse(new Input(new Segment(in), 0));
-    }
+public interface Parser<A, T extends Parser<A, T>> extends BasicParser<A, T> {
 
 
     /**
@@ -34,8 +27,8 @@ public interface Parser<A> extends BasicParser<A, Parser<A>> {
      * @param that parser to join
      * @return complex parser
      */
-    public default OrParser<A> or(Parser<A> that) {
-        return new OrParser<>(this, that);
+    public default OrParser<A> or(Parser<A, ?> that) {
+        return new OrParser<A>(this, that);
     }
 
     /**
@@ -44,7 +37,7 @@ public interface Parser<A> extends BasicParser<A, Parser<A>> {
      * @return complex parser
      */
 
-    public default OrParser<A> or(Supplier<Parser<A>> that) {
+    public default OrParser<A> or(Supplier<Parser<A, ?>> that) {
         return or(new DelayParser<>(that));
     }
 
@@ -54,7 +47,7 @@ public interface Parser<A> extends BasicParser<A, Parser<A>> {
      * @param that parser to join
      * @return complex parser
      */
-    public default Parser<A> then(HideParser that) {
+    public default Parser<A, ?> then(HideParser that) {
         return then((BasicParser<?, ?>)that).map(Pair::getFirst);
     }
 
@@ -64,7 +57,7 @@ public interface Parser<A> extends BasicParser<A, Parser<A>> {
      * @param that parser to join
      * @return complex parser
      */
-    public default <B> Parser<Pair<A, B>> then(BasicParser<B, ?> that) {
+    public default <B> Parser<Pair<A, B>, ConcatParser<A, B>> then(BasicParser<B, ?> that) {
         return new ConcatParser<>(this, that);
     }
 
@@ -77,7 +70,7 @@ public interface Parser<A> extends BasicParser<A, Parser<A>> {
      * @param that parser to join enclosed in Supplier interface
      * @return complex parser
      */
-    public default <B> Parser<Pair<A, B>> then(Supplier<Parser<B>> that) {
+    public default <B> Parser<Pair<A, B>, ?> then(Supplier<Parser<B, ?>> that) {
         return then(new DelayParser<>(that));
     }
 
@@ -88,7 +81,7 @@ public interface Parser<A> extends BasicParser<A, Parser<A>> {
      *
      * @return optional, empty when empty string matched
      */
-    public default Parser<Optional<A>> optional() {
+    public default Parser<Optional<A>, ?> optional() {
         return new OrParser<>(this, Parsers.empty((A) null)).map(Optional::ofNullable);
     }
 
@@ -97,15 +90,17 @@ public interface Parser<A> extends BasicParser<A, Parser<A>> {
      *
      * @return parser that returns list of values from this parser
      */
-    public default Parser<List<A>> repeat() {
-        Ref<Parser<Stream<A>>> selfRef = new Ref<>();
+    public default Parser<List<A>, ?> repeat() {
+        Ref<Parser<List<A>, ?>> selfRef = new Ref<>();
 
         val self =
-                this.then(selfRef).map((p) -> Stream.concat(Stream.of(p.getFirst()), p.getSecond()))
-                .or(Parsers.empty(Stream.<A>empty()))
+                this.then(selfRef).map((p) ->
+                    (List<A>)new ArrayList<A>(p.getSecond()) {{ add(0, p.getFirst()); }}
+                )
+                .or(Parsers.empty(Collections.<A>emptyList()))
                 .setRef(selfRef);
 
-        return self.map((s) -> s.collect(Collectors.toList()));
+        return self;
     }
 
     /**
@@ -124,7 +119,7 @@ public interface Parser<A> extends BasicParser<A, Parser<A>> {
      * @param f function to map values
      * @return
      */
-    public default <B> Parser<B> map(Function<A,B> f) {
+    public default <B> Parser<B, ?> map(Function<A,B> f) {
         return new MapParser<>(this, f);
     }
 }

@@ -17,6 +17,8 @@ public class Ref<A> implements Supplier<A> {
     public void set(A value) {
         if (isSet())
             throw new IllegalStateException("reference already set!");
+        if (value == null)
+            throw new NullPointerException();
         this.value = value;
     }
 

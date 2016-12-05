@@ -16,7 +16,7 @@ public class Input {
     int offset;
 
     /**
-     * Creates input that has offset moved ba <code>chars</code> characters.
+     * Creates input that has offset moved by <code>chars</code> characters.
      * @param chars
      * @return new Input
      */

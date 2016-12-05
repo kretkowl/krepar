@@ -5,6 +5,7 @@ import org.junit.Test;
 import lombok.val;
 
 import static pl.krepar.Parsers.*;
+import static pl.krepar.ParseContext.*;
 
 import static org.junit.Assert.*;
 
@@ -12,27 +13,35 @@ public class ParserTest {
 
     @Test
     public void testRegexp() {
-        assertTrue(string("A").parse("A").isSuccessful());
-        assertTrue(string("A").parse("AB").isSuccessful());
-        assertFalse(string("A").parse("B").isSuccessful());
-        assertFalse(string("A").parse("BA").isSuccessful());
+        assertTrue(parseFirst(string("A"), "A").isSuccessful());
+        assertTrue(parseFirst(string("A"), "AB").isSuccessful());
+        assertFalse(parseFirst(string("A"), "B").isSuccessful());
+        assertFalse(parseFirst(string("A"), "BA").isSuccessful());
 
-        assertTrue(regexp("a+").parse("aaab").isSuccessful());
-        assertTrue(regexp("a+").parse("aaab").match(
+        assertTrue(parseFirst(regexp("a+"), "aaab").isSuccessful());
+        assertTrue(parseFirst(regexp("a+"), "aaab").match(
                 (fail) -> Boolean.FALSE,
                 (__, r) -> Boolean.valueOf(r.getCharSequence().charAt(r.getOffset()) == 'b')));
     }
 
     @Test
+    public void testString() {
+        assertTrue(parseFirst(string("A"), "A").isSuccessful());
+        assertTrue(parseFirst(string("A"), "AB").isSuccessful());
+        assertFalse(parseFirst(string("A"), "B").isSuccessful());
+        assertFalse(parseFirst(string("A"), "BA").isSuccessful());
+    }
+
+    @Test
     public void testThen() {
-        assertTrue(string("A").then(string("B")).parse("AB").isSuccessful());
-        assertFalse(string("A").then(string("B")).parse("AC").isSuccessful());
+        assertTrue(parseFirst(string("A").then(string("B")), "AB").isSuccessful());
+        assertFalse(parseFirst(string("A").then(string("B")), "AC").isSuccessful());
     }
 
     @Test
     public void testThenWithRest() {
-        assertTrue(string("A").then(string("B")).parse("ABC").isSuccessful());
-        assertTrue(string("A").then(string("B")).parse("ABC").match(
+        assertTrue(parseFirst(string("A").then(string("B")), "ABC").isSuccessful());
+        assertTrue(parseFirst(string("A").then(string("B")), "ABC").match(
                 (fail) -> Boolean.FALSE,
                 (__, rest) -> Boolean.valueOf(rest.getCharSequence().charAt(rest.getOffset()) == 'C')
                 ));
@@ -40,86 +49,115 @@ public class ParserTest {
 
     @Test
     public void testOr() {
-        assertTrue(string("A").or(string("B")).parse("AC").isSuccessful());
-        assertTrue(string("A").or(string("B")).parse("B").isSuccessful());
-        assertFalse(string("A").or(string("B")).parse("C").isSuccessful());
+        assertTrue(parseFirst(string("A").or(string("B")), "AC").isSuccessful());
+        assertTrue(parseFirst(string("A").or(string("B")), "B").isSuccessful());
+        assertFalse(parseFirst(string("A").or(string("B")), "C").isSuccessful());
     }
 
     @Test
     public void testOptional() {
-        assertTrue(string("A").optional().parse("AB").isSuccessful());
-        assertTrue(string("A").optional().parse("B").isSuccessful());
+        assertTrue(parseFirst(string("A").optional(), "AB").isSuccessful());
+        assertTrue(parseFirst(string("A").optional(), "B").isSuccessful());
     }
 
     @Test
     public void testRecursive() {
-        val refAs = new Ref<Parser<String>>();
+        val refAs = new Ref<Parser<String, ?>>();
 
         val as = string("a").or(delay(refAs).then(string("a").hide())).setRef(refAs);
 
-        assertTrue(as.parse("a").isSuccessful());
-        assertTrue(as.parse("aa").isSuccessful());
+        assertTrue(parseFirst(as, "a").isSuccessful());
+        assertTrue(parseFirst(as, "aa").isSuccessful());
     }
 
     @Test
     public void testRecursiveWithEmpty() {
-        val refAs = new Ref<Parser<String>>();
+        val refAs = new Ref<Parser<String, ?>>();
 
         val as = empty("a").or(delay(refAs).then(string("a").hide())).setRef(refAs);
 
-        assertTrue(as.parse("").isSuccessful());
-        assertTrue(as.parse("a").isSuccessful());
-        assertTrue(as.parse("aa").isSuccessful());
-        assertTrue(as.parse("aab").isSuccessful());
+        assertTrue(parseFirst(as, "").isSuccessful());
+        assertTrue(parseFirst(as, "a").isSuccessful());
+        assertTrue(parseFirst(as, "aa").isSuccessful());
+        assertTrue(parseFirst(as, "aab").isSuccessful());
     }
 
     @Test
     public void testRepeat() {
-        assertTrue(string("A").repeat().parse("AAB").match(
+        val rr = parse(string("A").repeat(), "AAB");
+        assertEquals(3, rr.size());
+        assertTrue(
+                rr.stream().anyMatch(
+                e -> e.match(
                 (__) -> Boolean.FALSE,
                 (a, r) -> {
                     System.out.println(a);
                     System.out.println(r);
-                    return Boolean.valueOf(r.getCharSequence().charAt(r.getOffset()) == 'B');
-                }
-                ));
-        assertTrue(string("A").repeat().parse("B").isSuccessful());
+                    return r.getOffset() == 0;
+                })));
+
+        assertTrue(
+                rr.stream().anyMatch(
+                e -> e.match(
+                (__) -> Boolean.FALSE,
+                (a, r) -> {
+                    System.out.println(a);
+                    System.out.println(r);
+                    return r.getOffset() == 1;
+                })));
+
+        assertTrue(
+                rr.stream().anyMatch(
+                e -> e.match(
+                (__) -> Boolean.FALSE,
+                (a, r) -> {
+                    System.out.println(a);
+                    System.out.println(r);
+                    return r.getOffset() == 2;
+                })));
+
+
+        assertTrue(parseFirst(string("A").repeat(), "B").isSuccessful());
     }
 
     @Test
     public void testMatchSimple() {
-        assertTrue(regexp("a+b").parse("aabb").getValue().get().group().equals("aab"));
+        assertTrue(parseFirst(regexp("a+b"), "aabb").getValue().get().group().equals("aab"));
     }
 
     @Test
     public void testMatchPair() {
         assertEquals("AB",
-                string("A").then(string("B")).parse("AB").getValue()
+                parseFirst(string("A").then(string("B")), "AB").getValue()
                 .map(match((a, b) -> a + b)).get());
     }
 
     @Test
     public void testMatchOptionalPair() {
         assertEquals("AB",
-                string("A").optional().then(string("B")).parse("AB").getValue()
+                parseFirst(string("A").optional().then(string("B")), "AB").getValue()
                 .map(match((o, b) -> o.get() + b)).get());
 
-        assertFalse(string("A").optional().parse("B").getValue().get().isPresent());
+        assertFalse(parseFirst(string("A").optional(), "B").getValue().get().isPresent());
     }
 
     @Test
     public void testHide() {
         assertEquals("B",
-                string("A").hide().then(string("B")).parse("AB").getValue()
+                parseFirst(string("A").hide().then(string("B")), "AB").getValue()
                 .get());
 
-        assertEquals("A",string("A").then(string("B").hide()).parse("AB").getValue().get());
+        assertEquals("A", parseFirst(string("A").then(string("B").hide()), "AB").getValue().get());
     }
 
     @Test
     public void testMatchList() {
-        val res = string("A").hide().then(string("B").or(string("b")).repeat().then(string("C").hide())).parse("ABbbC").getValue().get();
+        val ress =
+                parse(string("A").hide().then(string("B").or(string("b")).repeat().then(string("C").hide())), "ABbbC");
 
+        val res = ress.stream().sorted((a,b) -> a.getValue().get().size() - b.getValue().get().size()).findFirst().get().getValue().get();
+
+        System.out.println(res.size());
         assertEquals(3, res.size());
         assertEquals("B", res.get(0));
         assertEquals("b", res.get(1));

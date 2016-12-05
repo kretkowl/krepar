@@ -10,18 +10,9 @@ import java.util.function.Function;
  * @param <A>
  * @param <B>
  */
-public class MapParser<A, B> implements Parser<A> {
+public class MapParser<A, B> extends AbstractMapParser<A, B, MapParser<A, B>> implements Parser<A, MapParser<A, B>> {
 
-    private final BasicParser<B, ?> base;
-
-    private final Function<B, A> mapping;
-
-    @Override
-    public ParseResult<A> parse(Input in, ParseContext ctx) {
-        return ctx.getResult(base, in).match(
-                ParseResult::failure,
-                (b, rest) -> ParseResult.success(mapping.apply(b), rest));
-    }
+    final BasicParser<B, ?> base;
 
     @Override
     public boolean isTerminal() {
@@ -29,9 +20,13 @@ public class MapParser<A, B> implements Parser<A> {
     }
 
     public MapParser(BasicParser<B, ?> base, Function<B, A> mapping) {
+        super(mapping);
         this.base = base;
-        this.mapping = mapping;
     }
 
 
+    @Override
+    protected BasicParser<B, ?> getBase() {
+        return base;
+    }
 }

@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  * @author kretkowl
  *
  */
-public class RegexParser implements Parser<MatchResult> {
+public class RegexParser implements Parser<MatchResult, RegexParser> {
     private Pattern pattern;
 
     /**
@@ -23,15 +23,17 @@ public class RegexParser implements Parser<MatchResult> {
         this.pattern = pattern;
     }
 
-    public ParseResult<MatchResult> parse(Input in, ParseContext ctx) {
+    public Continuation tryParse(Input in, ParseContext ctx) {
         Matcher matcher = pattern.matcher(
                 in.getCharSequence().subSequence(
                         in.getOffset(),
                         in.getCharSequence().length()));
         if (matcher.lookingAt()) {
-            return success(matcher.toMatchResult(), in.forward(matcher.end()));
+            ctx.putResult(this, in, success(matcher.toMatchResult(), in.forward(matcher.end())));
         } else {
-            return ParseResult.failure("<" + pattern.toString() + "> expected", in.getOffset());
+            ctx.putResult(this, in, ParseResult.failure("<" + pattern.toString() + "> expected", in.getOffset()));
         }
+
+        return null;
     }
 }

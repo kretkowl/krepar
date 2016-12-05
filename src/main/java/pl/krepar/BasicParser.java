@@ -1,5 +1,10 @@
 package pl.krepar;
 
+import java.util.function.Supplier;
+
+import lombok.AllArgsConstructor;
+import lombok.Value;
+
 /**
  * Base interface for every parser. Has no fluent api methods (except for map).
  *
@@ -15,21 +20,19 @@ package pl.krepar;
  */
 public interface BasicParser<A, T extends BasicParser<A, T>> {
 
-    /**
-     * Main entry point. Returns first matching prefix of input on success (it does not have to be whole
-     * input - you can use {@link Parsers.end} if you desire).
-     *
-     * @param in
-     * @return
-     */
-    public default ParseResult<? extends A> parse(Input in) {
-        return new ParseContext().getResult(this, in);
-    }
-
-    public ParseResult<? extends A> parse(Input in, ParseContext ctx);
-
     public default boolean isTerminal() { return true; }
 
     @SuppressWarnings("unchecked")
-    public default T setRef(Ref<T> r) { r.set((T)this); return (T)this;}
+    public default T setRef(Ref<? super T> r) { r.set((T) this); return (T)this;}
+
+    public Continuation tryParse(Input in, ParseContext pc);
+
+    @Value
+    @AllArgsConstructor
+    public static class Continuation {
+        final BasicParser<?, ?> parserToCall;
+        final Input input;
+
+        final Supplier<Continuation> then;
+    }
 }

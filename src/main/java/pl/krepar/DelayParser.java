@@ -9,13 +9,14 @@ import java.util.function.Supplier;
  *
  * @param <A>
  */
-class DelayParser<A> implements Parser<A> {
+class DelayParser<A> extends AbstractMapParser<A, A, DelayParser<A>> implements Parser<A, DelayParser<A>> {
 
     private final Supplier<? extends BasicParser<A, ?>> delay;
 
     private BasicParser<A, ?> realised;
 
     public DelayParser(Supplier<? extends BasicParser<A, ?>> delay) {
+        super((a) -> a);
         this.delay = delay;
     }
 
@@ -25,14 +26,15 @@ class DelayParser<A> implements Parser<A> {
     }
 
     @Override
-    public ParseResult<? extends A> parse(Input in, ParseContext ctx) {
-        realize();
-        return ctx.getResult(realised, in);
-    }
-
-    @Override
     public boolean isTerminal() {
         realize();
         return realised.isTerminal();
     }
+
+    @Override
+    protected BasicParser<A, ?> getBase() {
+        realize();
+        return realised;
+    }
+
 }

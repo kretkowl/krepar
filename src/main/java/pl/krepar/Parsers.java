@@ -10,12 +10,13 @@ import java.util.regex.Pattern;
 
 public class Parsers {
 
+    private final static Object empty = new Object();
     /**
      * Matches empty string -> essentially an always success parser.
      * @return
      */
-    public static Parser<?> empty() {
-        return empty(null);
+    public static Parser<?, ?> empty() {
+        return empty(empty);
     }
 
     /**
@@ -24,8 +25,19 @@ public class Parsers {
      *
      * @return
      */
-    public static <A> Parser<A> empty(A value) {
-        return (in, __) -> success(value, in);
+    public static <A, T extends Parser<A, T>> Parser<A, T> empty(A value) {
+        return new Parser<A, T>() {
+
+            @Override
+            public Continuation tryParse(
+                    Input in,
+                    ParseContext pc)
+            {
+                pc.putResult(this, in, success(value, in));
+                return null;
+            }
+
+        };
     }
 
     /**
@@ -33,8 +45,20 @@ public class Parsers {
      * @param msg
      * @return
      */
-    public static <B> Parser<B> failure(String msg) {
-        return (in, __) -> ParseResult.failure(msg, in.getOffset());
+    public static <B, T extends Parser<B, T>> Parser<B, T> failure(String msg) {
+        return new Parser<B,T>() {
+
+            @Override
+            public Continuation tryParse(
+                    Input in,
+                    ParseContext pc)
+            {
+                pc.putResult(this, in, pl.krepar.ParseResult.failure(msg, in.getOffset()));
+                return null;
+            }
+
+        };
+
     }
 
     /**
@@ -44,7 +68,7 @@ public class Parsers {
      * @return
      */
     @SafeVarargs
-    public static <B> OrParser<B> choice(Parser<B>... parsers) {
+    public static <B> OrParser<B> choice(Parser<B, ?>... parsers) {
         return new OrParser<B>(parsers);
     }
 
@@ -56,21 +80,21 @@ public class Parsers {
      * Start of string matcher
      * @return
      */
-    public static Parser<?> begin() { return regexp("^"); }
+    public static Parser<?, ?> begin() { return regexp("^"); }
 
     /**
      * End of string matcher
      * @return
      */
-    public static Parser<?> end() { return regexp("$"); }
+    public static Parser<?, ?> end() { return regexp("$"); }
 
     /**
      * Constant string parser
      * @param string
      * @return
      */
-    public static Parser<String> string(String string) {
-        return regexp(Pattern.quote(string)).map(MatchResult::group);
+    public static Parser<String, ?> string(String string) {
+        return new StringParser(string);
     }
 
     /**
@@ -78,7 +102,7 @@ public class Parsers {
      * @param regex
      * @return
      */
-    public static Parser<MatchResult> regexp(String regex) {
+    public static Parser<MatchResult, ?> regexp(String regex) {
         return regexp(Pattern.compile(regex));
     }
 
@@ -87,7 +111,7 @@ public class Parsers {
      * @param pattern
      * @return
      */
-    public static Parser<MatchResult> regexp(Pattern pattern) {
+    public static Parser<MatchResult, ?> regexp(Pattern pattern) {
         return new RegexParser(pattern);
     }
 

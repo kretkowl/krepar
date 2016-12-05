@@ -1,7 +1,5 @@
 package pl.krepar;
 
-import static pl.krepar.ParseResult.success;
-
 import java.util.function.Supplier;
 
 import lombok.Value;
@@ -17,28 +15,21 @@ import lombok.Value;
  *
  */
 @Value
-public class HideParser implements BasicParser<Void, HideParser> {
+public class HideParser extends AbstractMapParser<Object, Object, HideParser> {
 
-    public final Parser<?> hidden;
+    private static final Object value = new Object();
+
+    public final Parser<? super Object, ?> hidden;
 
     /**
      * Creates new hidden parser based on given.
      * @param hidden parser to hide
      */
-    public HideParser(Parser<?> hidden) {
-        this.hidden = hidden;
+    @SuppressWarnings("unchecked")
+    public HideParser(Parser<?, ?> hidden) {
+        super((__) -> value);
+        this.hidden = (Parser<? super Object, ?>) hidden;
     }
-
-    /**
-     * Always returns null on success.
-     */
-    @Override
-    public ParseResult<Void> parse(Input in, ParseContext ctx) {
-        return ctx.getResult(hidden, in).match(
-                ParseResult::failure,
-                (__, rest) -> success(null, rest));
-    }
-
 
     @Override
     public boolean isTerminal() {
@@ -62,7 +53,7 @@ public class HideParser implements BasicParser<Void, HideParser> {
      * @param p
      * @return
      */
-    public <A> Parser<A> then(Parser<A> that) {
+    public <A> Parser<A, ?> then(Parser<A, ?> that) {
         return
                 new ConcatParser<>(this, that).map((p) -> p.getSecond());
     }
@@ -73,8 +64,13 @@ public class HideParser implements BasicParser<Void, HideParser> {
      * @param p
      * @return
      */
-    public <A> Parser<A> then(Supplier<Parser<A>> that) {
+    public <A> Parser<A,?> then(Supplier<Parser<A,?>> that) {
         return
                 then(new DelayParser<>(that));
+    }
+
+    @Override
+    protected BasicParser<Object, ?> getBase() {
+        return hidden;
     }
 }
