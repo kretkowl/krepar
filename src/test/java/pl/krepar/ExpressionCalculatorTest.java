@@ -15,7 +15,7 @@ import org.junit.Test;
  * @author kretkowl
  *
  */
-public class ExpresionCalculatorTest {
+public class ExpressionCalculatorTest {
 
     private final Ref<Parser<Double, ?>> exprRef = new Ref<>();
 
