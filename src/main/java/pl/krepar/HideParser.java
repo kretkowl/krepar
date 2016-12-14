@@ -2,6 +2,7 @@ package pl.krepar;
 
 import java.util.function.Supplier;
 
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 /**
@@ -15,11 +16,17 @@ import lombok.Value;
  *
  */
 @Value
+@EqualsAndHashCode(callSuper=false)
 public class HideParser extends AbstractMapParser<Object, Object, HideParser> {
 
     private static final Object value = new Object();
 
     public final Parser<? super Object, ?> hidden;
+
+    @Override
+    public String prettyPrint() {
+        return "(" + hidden.prettyPrint() + ")";
+    }
 
     /**
      * Creates new hidden parser based on given.

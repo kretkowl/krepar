@@ -37,6 +37,11 @@ public class Parsers {
                 return null;
             }
 
+            @Override
+            public String prettyPrint() {
+                return "\u03b5";
+            }
+
         };
     }
 
@@ -57,6 +62,10 @@ public class Parsers {
                 return null;
             }
 
+            @Override
+            public String prettyPrint() {
+                return "\u2205";
+            }
         };
 
     }

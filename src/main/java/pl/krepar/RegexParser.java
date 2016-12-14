@@ -23,6 +23,11 @@ public class RegexParser implements Parser<MatchResult, RegexParser> {
         this.pattern = pattern;
     }
 
+    @Override
+    public String prettyPrint() {
+        return "#\"" + pattern.pattern() + "\"";
+    }
+
     public Continuation tryParse(Input in, ParseContext ctx) {
         Matcher matcher = pattern.matcher(
                 in.getCharSequence().subSequence(

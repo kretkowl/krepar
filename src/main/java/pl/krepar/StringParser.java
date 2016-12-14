@@ -2,10 +2,6 @@ package pl.krepar;
 
 import static pl.krepar.ParseResult.success;
 
-import java.util.regex.MatchResult;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * Class that allows to match regular expression against input.
  *
@@ -14,6 +10,11 @@ import java.util.regex.Pattern;
  */
 public class StringParser implements Parser<String, StringParser> {
     private String token;
+
+    @Override
+    public String prettyPrint() {
+        return "\"" + token + "\"";
+    }
 
     /**
      * Creates new parser with given pattern.

@@ -27,6 +27,10 @@ public interface BasicParser<A, T extends BasicParser<A, T>> {
 
     public Continuation tryParse(Input in, ParseContext pc);
 
+    public default String prettyPrint() {
+        return toString();
+    }
+
     @Value
     @AllArgsConstructor
     public static class Continuation {

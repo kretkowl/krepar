@@ -4,6 +4,7 @@ import static pl.krepar.ParseResult.failure;
 
 import java.util.Arrays;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
 import lombok.val;
@@ -15,6 +16,11 @@ public class OrParser<A> implements Parser<A, OrParser<A>> {
 
     private final Parser<A, ?>[] alts;
 
+
+    @Override
+    public String prettyPrint() {
+        return Arrays.stream(alts).map(BasicParser::prettyPrint).collect(Collectors.joining(" | "));
+    }
 
     @Override
     public Continuation tryParse(Input in, ParseContext pc) {

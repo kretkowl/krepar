@@ -15,6 +15,11 @@ class DelayParser<A> extends AbstractMapParser<A, A, DelayParser<A>> implements 
 
     private BasicParser<A, ?> realised;
 
+    @Override
+    public String prettyPrint() {
+        return "<REF>";
+    }
+
     public DelayParser(Supplier<? extends BasicParser<A, ?>> delay) {
         super((a) -> a);
         this.delay = delay;

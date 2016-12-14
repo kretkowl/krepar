@@ -27,6 +27,10 @@ public class ConcatParser<A, B> implements Parser<Pair<A, B>, ConcatParser<A, B>
 
     private Boolean terminal;
 
+    @Override
+    public String prettyPrint() {
+        return first.prettyPrint() + " . " + second.prettyPrint();
+    }
 
     public ConcatParser(BasicParser<A, ?> first, BasicParser<B, ?> second) {
         this.first = first;

@@ -80,11 +80,14 @@ public class ParseContext {
         Continuation cc = parser.tryParse(in, this);
         while (cc != null) {
 
+            System.out.print("toCall: " + cc.getParserToCall().prettyPrint() + " on " + cc.getInput());
             Continuation newCC = null;
             if (!memory.containsKey(Pair.of(cc.getParserToCall(), cc.getInput()))) {
+                System.out.println(" CALL");
                 putResult(cc.getParserToCall(), cc.getInput(), ParseResult.failure("no match", -1));
                 newCC = cc.getParserToCall().tryParse(cc.getInput(), this);
-            }
+            } else
+                System.out.println(" MATCH");
 
             if (newCC != null) {
                 stack.push(cc);

@@ -14,6 +14,12 @@ public class MapParser<A, B> extends AbstractMapParser<A, B, MapParser<A, B>> im
 
     final BasicParser<B, ?> base;
 
+
+    @Override
+    public String prettyPrint() {
+        return "\\[" + base.prettyPrint() + "]";
+    }
+
     @Override
     public boolean isTerminal() {
         return base.isTerminal();

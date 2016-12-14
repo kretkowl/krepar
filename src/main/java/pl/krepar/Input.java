@@ -23,4 +23,10 @@ public class Input {
     public Input forward(int chars) {
         return new Input(charSequence, offset + chars);
     }
+
+    public String toString() {
+        CharSequence pre = offset == 0 ? "" : charSequence.subSequence(0, offset);
+        CharSequence post = offset == charSequence.length() ? "" : charSequence.subSequence(offset, charSequence.length());
+        return pre + ">" + post;
+    }
 }
