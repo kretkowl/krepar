@@ -3,7 +3,7 @@ Library for ad-hoc Java parsers. API inspired by [Ahnfelt pearsercombinator](htt
 
 ## Motivation
 This lib was written to handle small ad-hoc grammars that appear in bigger projects. If you don't want
-to learn ANTLR or JAVACC own syntax, drag another runtime dependency to your project, complicate your 
+to learn ANTLR or JAVACC own syntax, drag another bag of runtime dependencies to your project, complicate your 
 workflow by adding step of code generation, ponder how to formulate grammar to avoid left recursion or 
 ambiguity or simply find idea of writing grammar in one language just to compile it to second language to
 create parser of third language that is compiled with your application a bit ridiculous, then you may be 
@@ -21,7 +21,7 @@ Example:
 
 ```java
         Parser<?,?> number = regexp("[0-9]+(\\.[0-9]+)?");
-        Parser<?,?>> op = string("+").or(string("-")).or(string("*")).or(string("/"));
+        Parser<?,?> op = string("+").or(string("-")).or(string("*")).or(string("/"));
         Parser<?,?> expr = number.then(op.then(number).repeat());
 
         System.out.println(parseFirst(expr, "1+2/3").match(
